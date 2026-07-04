@@ -84,7 +84,7 @@ O Random Forest, no limiar padrão (0,5), identifica apenas metade dos vinhos de
 O limiar 0,4 chama atenção: mantém precisão razoável (0,75) e já eleva o F1 para 0,70 — melhor
 que o padrão 0,5. A escolha do ponto de operação ideal depende de qual erro custa mais caro para
 a operação: deixar passar um vinho bom (Falso Negativo) ou rotular um vinho comum como especial
-(Falso Positivo). Ver `results/limiar_precisao_recall_rf.csv` e a seção 5.5 do notebook.
+(Falso Positivo).
 
 ## 🛠️ Tecnologias
 
