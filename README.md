@@ -70,4 +70,6 @@ Python · pandas · numpy · scikit-learn · matplotlib · seaborn
 
 ## 👥 Equipe
 
-- (preencher com os integrantes do grupo)
+- Isabele Cristina Felix Santos (rm371797)
+- Thais Marcondes Narbonne (rm372559)
+- Tiago Antônio dos Santos (rm373581)
