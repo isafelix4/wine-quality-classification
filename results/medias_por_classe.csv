@@ -1,0 +1,12 @@
+,Baixa/Media,Alta,diff_%
+fixed_acidity,8.225,8.847,7.6
+volatile_acidity,0.553,0.395,-28.6
+citric_acid,0.249,0.391,57.4
+residual_sugar,2.497,2.748,10.1
+chlorides,0.089,0.075,-16.0
+free_sulfur_dioxide,15.846,14.189,-10.5
+total_sulfur_dioxide,47.408,36.673,-22.6
+density,0.997,0.996,-0.1
+ph,3.316,3.282,-1.0
+sulphates,0.643,0.746,15.9
+alcohol,10.267,11.528,12.3
