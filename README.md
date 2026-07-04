@@ -38,6 +38,8 @@ wine-quality-classification/
 │   ├── preprocessing.py                    # Funções auxiliares
 │   └── run_analysis.py                     # Pipeline ponta-a-ponta (gera results/)
 ├── results/                                # Gráficos e métricas gerados
+│   ├── correlacao_features_derivadas.csv   # Correlação das features testadas (não incorporadas)
+│   └── limiar_precisao_recall_rf.csv       # Precisão/Recall/F1 por limiar (Random Forest)
 ├── requirements.txt
 └── README.md
 ```
@@ -58,11 +60,31 @@ python src/run_analysis.py
 ## 🔬 Pipeline (6 etapas)
 
 1. **Compreensão do problema** — definição da variável alvo binária (≥7).
-2. **EDA** — distribuições, correlações justificadas, outliers e balanceamento das classes.
-3. **Pré-processamento** — checagem de faltantes, padronização e split estratificado.
+2. **EDA** — distribuições, correlações justificadas, outliers, consistência física dos valores
+   (faixas plausíveis para vinho) e balanceamento das classes.
+3. **Pré-processamento** — checagem de faltantes, avaliação de features derivadas (testadas e
+   descartadas por não superarem as variáveis originais), padronização e split estratificado.
 4. **Modelagem** — Regressão Logística, Random Forest, Gradient Boosting e SVM.
-5. **Avaliação** — Acurácia, Precisão, Recall, F1, ROC-AUC, matriz de confusão e curvas ROC.
+5. **Avaliação** — Acurácia, Precisão, Recall, F1, ROC-AUC, matriz de confusão, curvas ROC,
+   leitura de custo de negócio (Falso Positivo x Falso Negativo) e ajuste de limiar do Random Forest.
 6. **Interpretação** — importância das variáveis e implicações para a produção.
+
+## 💡 Leitura de negócio: limiar de decisão
+
+O Random Forest, no limiar padrão (0,5), identifica apenas metade dos vinhos de Alta Qualidade
+(recall = 0,50). Reduzir esse limiar aumenta o recall às custas de precisão:
+
+| Limiar | Precisão | Recall | F1 |
+|---|---|---|---|
+| 0,5 (padrão) | 0,800 | 0,500 | 0,615 |
+| 0,4 | 0,750 | 0,656 | **0,700** |
+| 0,3 | 0,579 | 0,688 | 0,629 |
+| 0,2 | 0,469 | 0,719 | 0,568 |
+
+O limiar 0,4 chama atenção: mantém precisão razoável (0,75) e já eleva o F1 para 0,70 — melhor
+que o padrão 0,5. A escolha do ponto de operação ideal depende de qual erro custa mais caro para
+a operação: deixar passar um vinho bom (Falso Negativo) ou rotular um vinho comum como especial
+(Falso Positivo). Ver `results/limiar_precisao_recall_rf.csv` e a seção 5.5 do notebook.
 
 ## 🛠️ Tecnologias
 

@@ -89,8 +89,18 @@
     "alcohol": 12,
     "citric_acid": 1
   },
+  "valores_fora_faixa_plausivel": {
+    "ph": 0,
+    "alcohol": 0,
+    "density": 0,
+    "volatile_acidity": 0
+  },
   "treino": 914,
   "teste": 229,
+  "correlacao_features_derivadas": {
+    "acidez_total": 0.082,
+    "alcool_densidade": 0.484
+  },
   "cv_f1": {
     "Regressao Logistica": [
       0.505,
@@ -144,6 +154,12 @@
     }
   ],
   "melhor_modelo": "Random Forest",
+  "limiar_precisao_recall_rf": [
+    {"Limiar": 0.5, "Precisao": 0.8, "Recall": 0.5, "F1": 0.615},
+    {"Limiar": 0.4, "Precisao": 0.75, "Recall": 0.656, "F1": 0.7},
+    {"Limiar": 0.3, "Precisao": 0.579, "Recall": 0.688, "F1": 0.629},
+    {"Limiar": 0.2, "Precisao": 0.469, "Recall": 0.719, "F1": 0.568}
+  ],
   "importancia_rf": {
     "alcohol": 0.208,
     "citric_acid": 0.144,

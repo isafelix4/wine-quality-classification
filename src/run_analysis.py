@@ -20,7 +20,8 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score, roc_auc_score,
-    confusion_matrix, classification_report, roc_curve, ConfusionMatrixDisplay
+    confusion_matrix, classification_report, roc_curve, ConfusionMatrixDisplay,
+    precision_recall_curve
 )
 
 sns.set_theme(style="whitegrid")
@@ -124,9 +125,33 @@ sns.kdeplot(data=df, x="alcohol", hue="target", fill=True, common_norm=False,
 plt.title("Teor alcoolico por classe (0=Baixa/Media, 1=Alta)")
 plt.tight_layout(); plt.savefig(f"{RESULTS}/06_alcohol_por_classe.png", dpi=120); plt.close()
 
+# 2.7 consistencia fisica dos valores (faixas plausiveis para vinho)
+faixas_plausiveis = {
+    "ph": (2.5, 4.5),
+    "alcohol": (8.0, 15.0),
+    "density": (0.98, 1.01),
+    "volatile_acidity": (0.0, 2.0),
+}
+fora_da_faixa = {}
+for col, (minimo, maximo) in faixas_plausiveis.items():
+    fora_da_faixa[col] = int(((df[col] < minimo) | (df[col] > maximo)).sum())
+summary["valores_fora_faixa_plausivel"] = fora_da_faixa
+
 # ----------------------------------------------------------------------
 # 3. PRE-PROCESSAMENTO
 # ----------------------------------------------------------------------
+
+# 3.1 feature engineering: testar variaveis derivadas antes de decidir usa-las
+df_fe = df.copy()
+df_fe["acidez_total"] = df_fe["fixed_acidity"] + df_fe["volatile_acidity"]
+df_fe["alcool_densidade"] = df_fe["alcohol"] / df_fe["density"]
+novas_features = ["acidez_total", "alcool_densidade"]
+corr_novas = df_fe[novas_features].corrwith(df_fe["quality"])
+corr_novas.to_csv(f"{RESULTS}/correlacao_features_derivadas.csv")
+summary["correlacao_features_derivadas"] = {k: round(v, 3) for k, v in corr_novas.items()}
+# Decisao: nenhuma das duas supera claramente a variavel original que a compoe
+# (ver correlacao_com_qualidade.csv), entao NAO sao incorporadas ao modelo final.
+
 if df[features].isnull().sum().sum() > 0:
     df[features] = df[features].fillna(df[features].median())
 
@@ -226,6 +251,33 @@ for j in range(len(df_res.columns)+1):
     t[0, j].set_facecolor("#40466e"); t[0, j].set_text_props(color="white")
 plt.title("Comparacao de modelos (conjunto de teste)", pad=20)
 plt.tight_layout(); plt.savefig(f"{RESULTS}/09_tabela_comparacao.png", dpi=120, bbox_inches="tight"); plt.close()
+
+# 5.5 ajuste de limiar (threshold) do Random Forest: precisao/recall por limiar
+rf_model = modelos["Random Forest"]
+probs_rf = rf_model.predict_proba(X_test)[:, 1]
+prec_curve, rec_curve, thr_curve = precision_recall_curve(y_test, probs_rf)
+
+plt.figure()
+plt.plot(thr_curve, prec_curve[:-1], label="Precisao")
+plt.plot(thr_curve, rec_curve[:-1], label="Recall")
+plt.axvline(0.5, color="gray", linestyle="--", label="Limiar padrao (0,5)")
+plt.xlabel("Limiar de decisao"); plt.ylabel("Score")
+plt.title("Precisao e Recall por limiar - Random Forest"); plt.legend()
+plt.tight_layout(); plt.savefig(f"{RESULTS}/12_limiar_precisao_recall_rf.png", dpi=120); plt.close()
+
+limiares_teste = [0.5, 0.4, 0.3, 0.2]
+tabela_limiar = []
+for limiar in limiares_teste:
+    yp_l = (probs_rf >= limiar).astype(int)
+    tabela_limiar.append({
+        "Limiar": limiar,
+        "Precisao": round(precision_score(y_test, yp_l), 3),
+        "Recall": round(recall_score(y_test, yp_l), 3),
+        "F1": round(f1_score(y_test, yp_l), 3),
+    })
+df_limiar = pd.DataFrame(tabela_limiar)
+df_limiar.to_csv(f"{RESULTS}/limiar_precisao_recall_rf.csv", index=False)
+summary["limiar_precisao_recall_rf"] = tabela_limiar
 
 # ----------------------------------------------------------------------
 # 6. INTERPRETACAO
